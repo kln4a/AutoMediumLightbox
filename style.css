@@ -54,11 +54,15 @@ figure.full{
 	float: right;
 }
 
-
+img {
+	display: block;
+	margin: auto;
+	max-width: 100%;
+}
 
 /* MediumLightbox style */
 
-.scrollbar-measure {
+.mlb__measure{
 	width: 100px;
 	height: 100px;
 	overflow: scroll;
@@ -66,36 +70,24 @@ figure.full{
 	top: -9999px;
 }
 
-.img {
-	display: block;
-	margin: auto;
-	max-width: 100%;
-}
-
-
-.aspectRatioPlaceholder .img {
+.mlb__image {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-}
-
-
-
-.zoom-effect .img{
 	cursor: pointer;
 	cursor: -webkit-zoom-in;
 }
 
-.zoom-effect .zoomImg,
-.zoom-effect .zoomImg-wrap {
+.mlb__image--zoom,
+.mlb__wapper {
 	position: relative;
 	z-index: 900;
 	transition: all 300ms;
 }
 
-.zoom-effect .zoomImg-wrap--absolute {
+.mlb__wapper--absolute {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -103,23 +95,21 @@ figure.full{
 	height: 100%;
 }
 
-
-.zoom-effect .zoomImg {
+.mlb__image--zoom {
 	cursor: pointer;
 	cursor: -webkit-zoom-out;
 }
 
-
-.zoom-effect .zoomOverlay.show{
-	opacity: 1;
-}
-
-.zoom-effect .zoomOverlay {
+.mlb__overlay {
 	z-index: 800;
 	background: #fff;
 	position: absolute;
-	transition: opacity 300ms;
+	transition: opacity .2s ease;
 	opacity: 0;
 	cursor: pointer;
 	cursor: -webkit-zoom-out;
+}
+
+.mlb__overlay--show{
+	opacity: 0.9;
 }

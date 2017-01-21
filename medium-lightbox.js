@@ -1,8 +1,7 @@
 /*
- * Plugin: MediumLightbox v1.0
- * Author: Davide Calignano
+ * Plugin: AutoMediumLightbox v1.0
+ * Author: Davide Calignano, Anton Sirotkin
  */
-
 
 function MediumLightbox(element, options) {
 	"use strict";
@@ -14,6 +13,18 @@ function MediumLightbox(element, options) {
 	var screenSize ={};
 	var options = options || {};
 	var margin = options.margin || 50;
+	var cssClasses = {
+		main: '.mlb',
+		img: 'mlb__image',
+		imgZoom: 'mlb__image--zom',
+		placeholder: 'mlb__placeholder',
+		fill: 'mlb__fill',
+		imgZoom: 'mlb__image--zoom',
+		overlay: 'mlb__overlay',
+		overlayShow: 'mlb__overlay--show',
+		wrapper: 'mlb__wapper',
+		wrapperAbsolute: 'mlb__wapper--absolute'
+	}
 
 	// Get the scrollbar width
 	var scrollDiv = document.createElement("div");
@@ -40,7 +51,6 @@ function MediumLightbox(element, options) {
 	//recalc size screen on resize
 	window.addEventListener("resize", updateScreenSize);
 
-
 	function zoom(){
 
 		if(!this.isZoomed){
@@ -62,72 +72,58 @@ function MediumLightbox(element, options) {
 			var imgT = this.img.getBoundingClientRect().top;
 			var realW, realH;
 
-			//Get real dimension
-			if(this.img.dataset){
-				realW = this.img.dataset.width;    
-				realH = this.img.dataset.height;
-			}else{
-				realW = this.img.getAttribute('data-width');
-				realH = this.img.getAttribute('data-height');
-			}
-
-
+			if(!this.img.getAttribute('data-width')) return;
+			realW = this.img.getAttribute('data-width');
+			realH = this.img.getAttribute('data-height');
 
 			//add class to img
 			if (this.img.classList)
-				this.img.classList.add('zoomImg');
+				this.img.classList.add(cssClasses.imgZoom);
 			else
-				this.img.className += ' ' + 'zoomImg';
-
+				this.img.className += ' ' + cssClasses.imgZoom;
 
 			//create overlay div
 			this.overlay = document.createElement('div');
 			this.overlay.id = 'the-overlay';
-			this.overlay.className = 'zoomOverlay';
+			this.overlay.className = cssClasses.overlay;
 			this.overlay.style.cssText = 'height:'+(screenSize.y)+'px; width: '+screenSize.x+'px; top: -'+ ((screenSize.y-imgH)/2) +'px; left: -'+((screenSize.x-imgW)/2)+'px;';
 
-
-			//create wrapper for img and set attributes 
+			//create wrapper for img and set attributes
 			this.wrapper = document.createElement('div');
 			this.wrapper.id = 'the-wrapper';
-			this.wrapper.className = 'zoomImg-wrap zoomImg-wrap--absolute';
-			// this.wrapper.style.cssText = 'transform: translate(0px, 0px) translateZ(0px);';
+			this.wrapper.className = `${cssClasses.wrapper} ${cssClasses.wrapperAbsolute}`;
 			this.wrapper.appendChild(this.img);
-
 
 			//appen element to body
 			this.wrapper.appendChild(this.overlay);
 			this.children[0].appendChild(this.wrapper);
 
-
 			//wrap coordinates
 			var wrapX = ((screenSize.x-scrollbarWidth)/2)-imgL - (imgW/2);
 			var wrapY = imgT*(-1) + (screenSize.y-imgH)/2;
-
-
 
 			//Calc scale
 			//TODO if ratio*H > realH no scale
 			var scale = 1;
 			if(realH > imgH){
-				if(imgH == imgW && screenSize.y > screenSize.x){  
+				if(imgH == imgW && screenSize.y > screenSize.x){
 					// case 1: square image and screen h > w
 					scale = (screenSize.x-margin)/imgW;
-				}else if(imgH == imgW && screenSize.y < screenSize.x){ 
+				}else if(imgH == imgW && screenSize.y < screenSize.x){
 					// case 2: square image and screen w > h
 					scale = (screenSize.y-margin)/imgH;
-				}else if(imgH > imgW){ 
+				}else if(imgH > imgW){
 					// case 3: rectangular image h > w
 					scale = (screenSize.y-margin)/imgH;
-					if (scale*imgW > screenSize.x) { 
-						// case 3b: rectangular image h > w but zoomed image is too big 
+					if (scale*imgW > screenSize.x) {
+						// case 3b: rectangular image h > w but zoomed image is too big
 						scale = (screenSize.x-margin)/imgW;
 					};
-				}else if(imgH < imgW){ 
+				}else if(imgH < imgW){
 					// case 4: rectangular image w > h
 					scale = (screenSize.x-margin)/imgW;
 					if (scale*imgH > screenSize.y) {
-						// case 4b: rectangular image w > h but zoomed image is too big 
+						// case 4b: rectangular image w > h but zoomed image is too big
 						scale = (screenSize.y-margin)/imgH;
 					};
 				}
@@ -136,15 +132,14 @@ function MediumLightbox(element, options) {
 			//recal scale if zoomed image is more bigger then original
 			if(scale*imgW > realW){
 				scale = realW/imgW;
-				console.log('big')
 			}
-			
-                        //Add zommed values: x,y and scale
+
+                      //Add zommed values: x,y and scale
                         var that = this;
                         setTimeout(function(){
                             that.wrapper.style.cssText = 'transform: translate('+wrapX+'px, '+wrapY+'px) translateZ(0px);-webkit-transform: translate('+wrapX+'px, '+wrapY+'px) translateZ(0px);';
                             that.img.style.cssText="transform: scale("+scale+");-webkit-transform: scale("+scale+")";
-                            that.overlay.className = 'zoomOverlay show';
+                            that.overlay.className =  `${cssClasses.overlay} ${cssClasses.overlayShow}`;
                         },0);
 
 
@@ -157,17 +152,15 @@ function MediumLightbox(element, options) {
 			//remove style
 			this.img.style.cssText="";
 			this.wrapper.style.cssText = '';
-			this.overlay.className = 'zoomOverlay';
-
-
+			this.overlay.className = cssClasses.overlay;
 
 			//remove element
 			var that = this;
 			setTimeout(function(){
 				that.children[0].appendChild(that.img)
-				that.children[0].removeChild(that.wrapper) 
+				that.children[0].removeChild(that.wrapper)
 
-				var className = 'zoomImg'
+				var className = cssClasses.imgZoom;
 				if (that.img.classList)
 					that.img.classList.remove(className);
 				else
@@ -177,9 +170,42 @@ function MediumLightbox(element, options) {
 		}
 	}
 
+	//add Wrapper divs
+	function wrapper(element) {
+
+		var placeholder = document.createElement("div");
+				placeholder.classList.add(cssClasses.placeholder);
+				element.appendChild(placeholder);
+
+		var img = element.getElementsByTagName('img')[0];
+		if(img) {
+			var fill = document.createElement("div");
+					fill.classList.add(cssClasses.fill);
+					placeholder.appendChild(fill);
+					placeholder.appendChild(img);
+					img.onload = function(){
+						var fill = this.parentNode.querySelector(`.${cssClasses.fill}`);
+						if(fill) {
+							fill.setAttribute('style', 'padding-bottom: ' + Math.round((this.clientHeight / this.clientWidth) * 100) + '%;');
+							this.classList.add(cssClasses.img);
+						}
+						var newImg = new Image();
+						newImg.onload = function() {
+							var realImg = document.body.querySelector(`img[src="${this.getAttribute('src')}"]`);
+							realImg.setAttribute('data-width', this.width);
+							realImg.setAttribute('data-width', this.height);
+    				}
+						newImg.src = this.getAttribute('src');
+					}
+		}
+
+	}
+
+
 	//Apply effect on all elements
 	var elements = document.querySelectorAll(element);
 	Array.prototype.forEach.call(elements, function(el, i){
+		wrapper(el);
 		el.addEventListener("click", zoom);
 	});
 
